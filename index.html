@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOLFKIN - Custom Apparel & Printing Showroom</title>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
+        body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .neon-glow { text-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444, 0 0 40px #ef4444; }
+        .border-glow { box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
+        .logo-svg { filter: drop-shadow(0px 0px 8px rgba(239, 68, 68, 0.8)); }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+
+    <!-- Sticky Header -->
+    <header class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-red-500/30">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <svg viewBox="0 0 200 150" class="w-10 h-10 md:w-12 md:h-12 logo-svg">
+                    <path d="M30 40 L60 80 L100 20 L140 80 L170 40 L150 120 L50 120 Z" fill="#ef4444" />
+                    <path d="M45 42 L60 65 L100 15 L140 65 L155 42 L145 110 L55 110 Z" fill="#fef08a" />
+                </svg>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black text-red-500 tracking-wider neon-glow">WOLFKIN</h1>
+                    <p class="text-[10px] md:text-xs text-slate-400 font-semibold">CUSTOM APPAREL & PRINTING SHOWROOM</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 md:space-x-3">
+                <button onclick="scrollToSection('cart')" class="relative bg-red-600 hover:bg-red-700 p-2.5 rounded-full transition z-10" aria-label="Cart">
+                    🛒 <span id="cart-counter" class="absolute -top-1 -right-1 bg-yellow-400 text-black text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">0</span>
+                </button>
+                <button onclick="openAdminModal()" class="relative z-10 bg-slate-800 text-white hover:bg-slate-700 px-3 py-2 rounded-xl text-xs font-bold border border-slate-700 transition flex items-center space-x-1">
+                    <span>⚙️</span> <span class="hidden sm:inline">Admin</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 mt-6 space-y-10">
+
+        <!-- Banner -->
+        <section class="relative rounded-2xl overflow-hidden border border-red-500/30 border-glow p-6 md:p-8 text-center bg-gradient-to-r from-red-950/40 via-slate-900 to-red-950/40">
+            <h2 class="text-2xl md:text-5xl font-extrabold text-white mb-2">Apne Kapdo Par Karwaye <span class="text-red-500 neon-glow">Brand & Print</span></h2>
+            <p class="text-slate-300 max-w-xl mx-auto text-xs md:text-base mb-6">High Quality DTF & Embroidery Screen Printing. Mahuawa Dhala, Near KMC Hospital.</p>
+            <div class="flex flex-wrap justify-center gap-3 md:gap-4">
+                <a href="tel:+919278373472" class="bg-red-600 hover:bg-red-700 text-white font-bold px-5 py-3 rounded-xl shadow-lg transition text-sm flex items-center space-x-2">
+                    <span>📞 Call Owner (Anurag Yadav)</span>
+                </a>
+                <a href="https://wa.me/919278373472?text=Hello%20Wolfkin%20Team%2C%20I%20want%20to%20get%20custom%20printing%20done." target="_blank" class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-3 rounded-xl shadow-lg transition text-sm flex items-center space-x-2">
+                    <span>💬 WhatsApp Order</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- Product Catalog -->
+        <section id="products-section">
+            <div class="flex items-center justify-between mb-6 border-b border-slate-800 pb-3">
+                <h3 class="text-xl md:text-2xl font-bold flex items-center space-x-2">
+                    <span class="text-red-500">👕</span> <span>Garments & Products</span>
+                </h3>
+                <span class="text-xs text-slate-400">Tap to customize & add to cart</span>
+            </div>
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                <!-- Loaded dynamically -->
+            </div>
+        </section>
+
+        <!-- Live Estimate Calculator -->
+        <section id="estimator" class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+            <h3 class="text-xl md:text-2xl font-bold text-red-500 mb-4 flex items-center space-x-2">
+                <span>🧮</span> <span>Custom Print Estimate Calculator</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Select Garment Base Price</label>
+                        <select id="est-garment" onchange="calculateEstimate()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white">
+                            <option value="300">T-Shirt (₹300)</option>
+                            <option value="600">Hoodie (₹600)</option>
+                            <option value="450">Polo T-Shirt (₹450)</option>
+                            <option value="200">Cap / Tote Bag (₹200)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Print Location</label>
+                        <select id="est-location" onchange="calculateEstimate()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white">
+                            <option value="100">Front Only (+₹100)</option>
+                            <option value="180">Front & Back (+₹180)</option>
+                            <option value="50">Small Logo Chest (+₹50)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1">Quantity</label>
+                        <input type="number" id="est-qty" value="1" min="1" oninput="calculateEstimate()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white">
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-red-500/20 text-center">
+                        <span class="block text-xs text-slate-400 font-bold uppercase tracking-wider">Estimated Total</span>
+                        <span id="est-total" class="text-3xl font-black text-yellow-400">₹400</span>
+                    </div>
+                    <button onclick="orderEstimateViaWhatsApp()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center space-x-2">
+                        <span>💬 Order this Estimate on WhatsApp</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Shopping Cart -->
+        <section id="cart" class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+            <h3 class="text-xl md:text-2xl font-bold text-white mb-4 flex items-center space-x-2">
+                <span>🛒</span> <span>Your Shopping Cart</span>
+            </h3>
+            <div id="cart-items" class="space-y-4 mb-6">
+                <!-- Cart items loaded dynamically -->
+            </div>
+            <div id="cart-summary" class="border-t border-slate-800 pt-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="text-lg font-bold">Total: <span id="cart-total-price" class="text-red-500">₹0</span></div>
+                <button onclick="checkoutCart()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-3 rounded-xl transition shadow-lg flex items-center justify-center space-x-2">
+                    <span>🚀 Checkout via WhatsApp</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Location & Map -->
+        <section class="bg-slate-900 p-6 rounded-2xl border border-slate-800 text-center">
+            <h3 class="text-xl md:text-2xl font-bold text-white mb-2">Visit Our Showroom</h3>
+            <p class="text-slate-400 text-sm mb-4">Mahuawa Dhala, Near KMC Hospital | Owner: Anurag Yadav</p>
+            <div class="rounded-xl overflow-hidden border border-slate-700 h-64">
+                <iframe width="100%" height="100%" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/place?q=Mahuawa+Dhala+KMC+Hospital&key=" allowfullscreen></iframe>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Admin Modal -->
+    <div id="admin-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-red-500/50 w-full max-w-md p-6 rounded-2xl relative shadow-2xl">
+            <button onclick="closeAdminModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl font-bold px-2 py-1">&times;</button>
+            
+            <div id="admin-auth">
+                <h3 class="text-xl font-bold text-white mb-2 text-center">Owner Admin Panel</h3>
+                <p class="text-xs text-slate-400 text-center mb-6">Enter 4-Digit Security PIN to Manage Inventory</p>
+                <div class="space-y-4">
+                    <input type="password" id="admin-pin" placeholder="Enter PIN" maxlength="4" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-center text-xl tracking-widest font-bold text-white focus:outline-none focus:border-red-500">
+                    <button onclick="verifyAdminPin()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition shadow-lg">🔐 Login</button>
+                </div>
+                <p id="pin-error" class="text-red-500 text-xs mt-3 text-center hidden">Invalid PIN! Access Denied.</p>
+            </div>
+            
+            <div id="admin-panel" class="hidden space-y-4">
+                <h3 class="text-xl font-bold text-red-500 mb-4 border-b border-slate-800 pb-2">Manage Products</h3>
+                <div class="bg-slate-950 p-4 rounded-xl space-y-3 border border-slate-800">
+                    <h4 class="text-sm font-semibold text-white">Add / Edit Product</h4>
+                    <input type="hidden" id="p-id">
+                    <input type="text" id="p-name" placeholder="Product Name (e.g., Black T-Shirt)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white">
+                    <input type="number" id="p-price" placeholder="Price (₹)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white">
+                    <input type="text" id="p-image" placeholder="Image URL (https://...)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white">
+                    <button onclick="saveProduct()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-lg text-sm transition">💾 Save Product</button>
+                </div>
+                <div class="h-48 overflow-y-auto space-y-2 pr-1" id="admin-product-list">
+                    <!-- Dynamic admin product rows -->
+                </div>
+                <button onclick="logoutAdmin()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-semibold py-2 rounded-lg transition">Logout Admin</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        const SUPABASE_URL = "https://bjdrttvurljgbkptvx.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_AGCTSCRBm68DRLCLEJA_IykSzmhiQ";
+        
+        const supabase = (window.supabase && typeof window.supabase.createClient === 'function')
+            ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+            : null;
+
+        let products = [
+            { id: 1, name: "Premium Black Cotton T-Shirt", price: 350, image_url: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=500" },
+            { id: 2, name: "Heavyweight Blank Hoodie", price: 750, image_url: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=500" },
+            { id: 3, name: "Casual Polo Collar T-Shirt", price: 500, image_url: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=500" }
+        ];
+
+        let cart = [];
+
+        async function initApp() {
+            if (supabase) {
+                await fetchProductsFromSupabase();
+            } else {
+                renderProducts();
+            }
+            renderCart();
+            calculateEstimate();
+        }
+
+        async function fetchProductsFromSupabase() {
+            try {
+                const { data, error } = await supabase.from('products').select('*');
+                if (data && data.length > 0) {
+                    products = data;
+                }
+            } catch (err) {
+                console.warn("Supabase fetch fallback active:", err);
+            }
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = products.map(p => `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-red-500/50 transition duration-300 flex flex-col justify-between">
+                    <img src="${p.image_url}" alt="${p.name}" class="w-full h-56 object-cover bg-slate-800">
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <div>
+                            <h4 class="text-lg font-bold text-white mb-1">${p.name}</h4>
+                            <p class="text-xl font-black text-red-500 mb-4">₹${p.price}</p>
+                        </div>
+                        <div class="space-y-2">
+                            <select id="size-${p.id}" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs text-white">
+                                <option value="S">Size: S</option>
+                                <option value="M" selected>Size: M</option>
+                                <option value="L">Size: L</option>
+                                <option value="XL">Size: XL</option>
+                                <option value="XXL">Size: XXL</option>
+                            </select>
+                            <button onclick="addToCart(${p.id})" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-sm transition">
+                                🛒 Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function calculateEstimate() {
+            const garment = parseInt(document.getElementById('est-garment').value) || 0;
+            const location = parseInt(document.getElementById('est-location').value) || 0;
+            const qty = parseInt(document.getElementById('est-qty').value) || 1;
+            const total = (garment + location) * qty;
+            document.getElementById('est-total').innerText = '₹' + total;
+        }
+
+        function orderEstimateViaWhatsApp() {
+            const garmentText = document.getElementById('est-garment').options[document.getElementById('est-garment').selectedIndex].text;
+            const locationText = document.getElementById('est-location').options[document.getElementById('est-location').selectedIndex].text;
+            const qty = document.getElementById('est-qty').value;
+            const total = document.getElementById('est-total').innerText;
+
+            const msg = `Hello Anurag Ji, I want to place an order based on my Print Estimate:\n\n- Garment: ${garmentText}\n- Print Type: ${locationText}\n- Quantity: ${qty}\n- Total Estimated Price: ${total}\n\nPlease confirm my order!`;
+            window.open(`https://wa.me/919278373472?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            const size = document.getElementById(`size-${productId}`).value;
+            if (!product) return;
+
+            const existingIndex = cart.findIndex(item => item.product.id === productId && item.size === size);
+            if (existingIndex > -1) {
+                cart[existingIndex].quantity += 1;
+            } else {
+                cart.push({ product, size, quantity: 1 });
+            }
+            renderCart();
+            scrollToSection('cart');
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            renderCart();
+        }
+
+        function updateQuantity(index, delta) {
+            cart[index].quantity += delta;
+            if (cart[index].quantity <= 0) {
+                removeFromCart(index);
+            } else {
+                renderCart();
+            }
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            const counter = document.getElementById('cart-counter');
+            const totalDisplay = document.getElementById('cart-total-price');
+            
+            let totalItems = 0;
+            let totalPrice = 0;
+
+            if (cart.length === 0) {
+                container.innerHTML = `<p class="text-slate-500 text-center py-8">Your cart is empty. Select products above to customize & order!</p>`;
+            } else {
+                container.innerHTML = cart.map((item, index) => {
+                    totalItems += item.quantity;
+                    totalPrice += item.product.price * item.quantity;
+                    return `
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                            <div class="flex items-center space-x-4">
+                                <img src="${item.product.image_url}" class="w-16 h-16 object-cover rounded-lg bg-slate-800">
+                                <div>
+                                    <h5 class="font-bold text-white text-sm md:text-base">${item.product.name}</h5>
+                                    <p class="text-xs text-slate-400">Size: <span class="font-bold text-red-500">${item.size}</span></p>
+                                    <p class="text-sm font-bold mt-1">₹${item.product.price * item.quantity}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="flex items-center border border-slate-700 rounded-lg overflow-hidden">
+                                    <button onclick="updateQuantity(${index}, -1)" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 font-bold text-sm">-</button>
+                                    <span class="px-3 py-1 text-sm font-bold bg-slate-900">${item.quantity}</span>
+                                    <button onclick="updateQuantity(${index}, 1)" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 font-bold text-sm">+</button>
+                                </div>
+                                <button onclick="removeFromCart(${index})" class="text-red-500 hover:text-red-400 text-xs font-bold px-2 py-1">Remove</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            counter.innerText = totalItems;
+            totalDisplay.innerText = '₹' + totalPrice;
+        }
+
+        function checkoutCart() {
+            if (cart.length === 0) return;
+            let msg = `Hello Anurag Ji, I want to place an order for the following custom printed items:\n\n`;
+            cart.forEach(item => {
+                msg += `- ${item.product.name} (Size: ${item.size}) x ${item.quantity} = ₹${item.product.price * item.quantity}\n`;
+            });
+            msg += `\nTotal Amount: ${document.getElementById('cart-total-price').innerText}\n\nPlease confirm my order!`;
+            window.open(`https://wa.me/919278373472?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function scrollToSection(id) {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function openAdminModal() {
+            document.getElementById('admin-modal').classList.remove('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
+
+        function verifyAdminPin() {
+            const pin = document.getElementById('admin-pin').value;
+            if (pin === "5911") {
+                document.getElementById('admin-auth').classList.add('hidden');
+                document.getElementById('admin-panel').classList.remove('hidden');
+                document.getElementById('pin-error').classList.add('hidden');
+                renderAdminProductList();
+            } else {
+                document.getElementById('pin-error').classList.remove('hidden');
+            }
+        }
+
+        function logoutAdmin() {
+            document.getElementById('admin-panel').classList.add('hidden');
+            document.getElementById('admin-auth').classList.remove('hidden');
+            document.getElementById('admin-pin').value = '';
+        }
+
+        function renderAdminProductList() {
+            const list = document.getElementById('admin-product-list');
+            list.innerHTML = products.map(p => `
+                <div class="flex items-center justify-between p-3 bg-slate-900 rounded-lg border border-slate-800 text-xs">
+                    <span class="font-bold text-white truncate max-w-[150px]">${p.name} (₹${p.price})</span>
+                    <div class="space-x-2">
+                        <button onclick="editProduct(${p.id})" class="text-yellow-400 hover:underline font-semibold">Edit</button>
+                        <button onclick="deleteProduct(${p.id})" class="text-red-500 hover:underline font-semibold">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function editProduct(id) {
+            const p = products.find(item => item.id === id);
+            if (!p) return;
+            document.getElementById('p-id').value = p.id;
+            document.getElementById('p-name').value = p.name;
+            document.getElementById('p-price').value = p.price;
+            document.getElementById('p-image').value = p.image_url;
+        }
+
+        async function saveProduct() {
+            const id = document.getElementById('p-id').value;
+            const name = document.getElementById('p-name').value;
+            const price = parseFloat(document.getElementById('p-price').value);
+            const image_url = document.getElementById('p-image').value;
+
+            if (!name || isNaN(price) || !image_url) {
+                alert("Please fill all valid fields!");
+                return;
+            }
+
+            if (supabase) {
+                if (id) {
+                    await supabase.from('products').update({ name, price, image_url }).eq('id', id);
+                } else {
+                    await supabase.from('products').insert([{ name, price, image_url }]);
+                }
+                await fetchProductsFromSupabase();
+            } else {
+                if (id) {
+                    const index = products.findIndex(item => item.id == id);
+                    if (index > -1) products[index] = { id: parseInt(id), name, price, image_url };
+                } else {
+                    products.push({ id: Date.now(), name, price, image_url });
+                }
+                renderProducts();
+            }
+
+            renderAdminProductList();
+            document.getElementById('p-id').value = '';
+            document.getElementById('p-name').value = '';
+            document.getElementById('p-price').value = '';
+            document.getElementById('p-image').value = '';
+            alert("Product saved successfully!");
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm("Are you sure you want to delete this product?")) return;
+            if (supabase) {
+                await supabase.from('products').delete().eq('id', id);
+                await fetchProductsFromSupabase();
+            } else {
+                products = products.filter(p => p.id !== id);
+                renderProducts();
+            }
+            renderAdminProductList();
+        }
+
+        initApp();
+    </script>
+</body>
+</html>
